@@ -41,7 +41,12 @@ func initDB(ctx context.Context, dbURL string) {
 }
 
 func getStatuses(c *gin.Context) {
-	rows, err := dbPool.Query(context.Background(), "SELECT ip, ping_time, last_success_at FROM statuses")
+	query := `
+	SELECT DISTINCT ON (ip) ip, ping_time, last_success_at 
+	FROM statuses 
+	ORDER BY ip, last_success_at DESC;
+	`
+	rows, err := dbPool.Query(context.Background(), query)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
